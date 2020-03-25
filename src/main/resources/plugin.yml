@@ -1,0 +1,7 @@
+name: AutosmeltFix
+version: 0.0.1
+main: cn.xtuly.mcp.autosmeltfix.AutosmeltFix
+depend: [Residence]
+authors: [Ylarod]
+description: Fix bug caused by autosmelt and Residance
+website: xtuly.cn
