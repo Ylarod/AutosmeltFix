@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_12_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -39,6 +40,7 @@ public final class AutosmeltFix extends JavaPlugin implements Listener {
         //初始化默认设置
         config.options().copyDefaults(true);
         config.addDefault("Option.method", "default");
+        config.addDefault("Option.itemID", 8245);
         config.addDefault("Option.oreID", "14,15,16,21,56,73,127,153,256,291,292,308,809,832,833,359,1058,1496,1504,1931");
         config.addDefault("Option.debug", false);
         config.addDefault("Message.warn", "[§aAutosmeltFix§f]检测到你正在你用自动冶炼bug,你已被警告");
@@ -47,9 +49,9 @@ public final class AutosmeltFix extends JavaPlugin implements Listener {
         this.saveConfig();
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onTryingDestroy(PlayerInteractEvent e) {
-        if (e.getPlayer().isOp() && config.getBoolean("Option.debug")) {
+        if (e.getPlayer().isOp() && config.getBoolean("Option.debug") ) {
             e.getPlayer().sendMessage("-------------------------------------------");
             e.getPlayer().sendMessage("Action:" + e.getAction().name());
             e.getPlayer().sendMessage("BlockId:" + e.getClickedBlock().getTypeId());
@@ -63,7 +65,7 @@ public final class AutosmeltFix extends JavaPlugin implements Listener {
             if (config.getString("Option.oreID").contains(String.valueOf(e.getClickedBlock().getTypeId()))) {
                 Location loc = e.getClickedBlock().getLocation();
                 Player player = e.getPlayer();
-                if (hasAutoSmelt(player.getInventory().getItemInMainHand())) {
+                if (player.getInventory().getItemInMainHand().getTypeId() == config.getInt("Option.itemID")) {
                     if (!canBreak(loc, player)) {
                         e.setCancelled(true);
                         switch (config.getString("Option.method")) {
@@ -93,7 +95,7 @@ public final class AutosmeltFix extends JavaPlugin implements Listener {
         ClaimedResidence res = Residence.getInstance().getResidenceManager().getByLoc(loc);
         if (res != null) {
             ResidencePermissions perms = res.getPermissions();
-            return perms.playerHas(player, Flags.getFlag("destroy"), true);
+            return perms.playerHas(player, Flags.getFlag("destroy"), false) && perms.playerHas(player, Flags.getFlag("place"), false) && perms.playerHas(player, Flags.getFlag("build"), false);
         }
         return true;
     }
